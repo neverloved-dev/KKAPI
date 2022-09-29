@@ -8,19 +8,6 @@ import smtplib
 # Create your views here.
 
 #Admin views
-
-@api_view(["POST"])
-def registerSuper(request):
-    saName = request.data.clean["name"]
-    saPassword = request.data.clean["password"]
-    superAdmin = SuperAdmin()
-    superAdmin.name = saName
-    superAdmin.password = saPassword
-    superAdmin.save()
-    return redirect("/profile")
-
-
-
 @api_view(["POST"])
 def registerUser(request):
     aName = request.data.clean["name"]
@@ -52,22 +39,18 @@ def loginUser(request):
    password = request.clean["password"]
    if(name == "" or password == ""):
        return response("Please fill in all fields").json()
-   user = SuperAdmin.objects.get(name=name)
+   user = authenticate(username = name, password = password)
    if(user == null):
        return response("User not found").json()
 
-   if(user.password == password):
+   if(user.password == password and user is not None):
        return redirect("/profile")
    else:
        return response("Invalid password")
 
 #Check if user is logged in for these two
 @api_view(["GET"])
-def getDataSuper(request):
-    pass
-
-@api_view(["GET"])
-def getData(request):
+def getUserProfile(request):
     pass
 
 
@@ -171,24 +154,40 @@ def createTask(request):
 
 @api_view(["POST"])
 def createForum(request):
-    pass
+    title = request.data.clean["title"]
+    text = request.data.clean["text"]
+    forum = Forum()
+    forum.name = title
+    forum.text = text
+    forum.save()
+    return redirect("/forum")
 
 @api_view(["POST"])
-def createClass(request):
+def createClass(request,user:User):
     name = request.data.clean["name"]
-    #teacher user.getCurrentUser()
-    course = Course()
-    course.name = name
-    #course.teacher = teacher
-    course.save()
+    if(user.is_authenticated and user.is_teacher):
+        course = Course()
+        course.name = name
+        course.teacher = user
+        course.save()
 
 @api_view(["POST"])
 def uploadTutorial(request):
-    pass
+    name = request.data.clean["name"]
+    if(user.is_authenticated and user.is_teacher):
+        course = Course()
+        course.name = name
+        course.teacher = user
+        course.save()
 
 @ap_view(["POST"])
 def postTest(request):
-    pass
+     name = request.data.clean["name"]
+     if(user.is_authenticated and user.is_teacher):
+        test = Test()
+        test.title = title
+        test.teacher = user
+        test.save()
 
 @api_view(["GET"])
 def getAcrivityLists(request):
@@ -200,11 +199,18 @@ def getActivityList(request,id):
 
 @api_view(["GET"])
 def viewProfile(request,id):
-    pass
+    user = User.objects.get(id=id)
+    return redirect("/profile",{user:user})
 
 @api_view(["PUT"])
 def editProfile(request,id):
-    pass
+    user = User.objects.get(id=id)
+    user.username = request.data.clean["username"]
+    user.f_name = request.data.clean["first name"]
+    user.l_name = request.data.clean["last name"]
+    user.email = request.data.clean["email"]
+    user.save()
+    return redirect("profile",{user:user})
 
 @api_view(["POST"]) #ZOOM API
 def createMeeting(request):
