@@ -63,3 +63,20 @@ class Test(models.Model):
             User,
             on_delete=models.CASCADE
         )
+
+
+class ActiviyList(models.Model):
+     id = models.IntegerField(primary_key=True)
+     title = models.CharField(max_length=20)
+     course = models.ForeignKey(
+         Course,
+         on_delete=models.CASCADE
+         )
+     task = models.ForeignKey(
+         Task,
+         on_delete=models.CASCADE
+         )
+     student = models.ForeignKey(
+         User,
+         on_delete=models.CASCADE
+         )

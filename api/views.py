@@ -35,8 +35,8 @@ def registerUser(request):
 
 @api_view(["POST"])
 def loginUser(request):
-   name = request.clean["name"]
-   password = request.clean["password"]
+   name = request.data.clean["name"]
+   password = request.data.clean["password"]
    if(name == "" or password == ""):
        return response("Please fill in all fields").json()
    user = authenticate(username = name, password = password)
@@ -50,39 +50,48 @@ def loginUser(request):
 
 #Check if user is logged in for these two
 @api_view(["GET"])
-def getUserProfile(request):
-    pass
-
+def getUserProfile(request,id):
+    user + User.objects.get(id = id)
+    return redirect("/profile",{user:user})
 
 @api_view(["GET"])
 def getStudentData(request,name):
-    
-    student = Student.object.get(name=name)
-    return response(student)
+    user = User()
+    student = User.object.get(name=name)
+    if (user.is_authenticated and user.is_teacher):
+        return response(student)
 
 
 @api_view(["GET"])
 def getTeacherData(request,name):
-    teacher = Teacher.object.get(name=name)
-    return response(teacher)
+    user = User()
+    if(user.is_authenticated and user.is_admin or user.is_super_admin):
+        teacher = Userr.object.get(name=name)
+        return response(teacher)
 
 
 @api_view(["GET"])
 def getBatchData(request,name):
-    batch = Batch.object.get(name=name)
-    return response(batch)
+    user = User()
+    if (user.is_authenticated and user.is_admin or user.is_super_admin):
+        batch = Batch.object.get(name=name)
+        return response(batch)
 
 
 @api_view(["GET"])
 def getCourseData(request,name):
-    course = Course.object.get(name=name)
-    return response(course)
+     user = User()
+     if(user.is_authenticated and user.is_admin):
+         course = Course.objects.get(name=name)
+         return (course)
 
 
 @api_view(["GET"])
 def getTaskData(request,name):
-    task = Task.object.get(name=name)
-    return response(task)
+    user = User()
+    if (user.is_authenticated and user.is_admin):
+        task = Task.object.get(name=name)
+        return response(task)
 
 
 def sendMail(mail):
@@ -106,7 +115,7 @@ def createStudent(request):
     name = request.data.clean["name"]
     password = request.data.clean["password"]
     mail = request.data.clean["email"]
-    student = Student()
+    student = User()
     student.name = name
     student.password = password 
     sendMail(mail)
@@ -174,6 +183,7 @@ def createClass(request,user:User):
 @api_view(["POST"])
 def uploadTutorial(request):
     name = request.data.clean["name"]
+    user = User()
     if(user.is_authenticated and user.is_teacher):
         course = Course()
         course.name = name
@@ -182,7 +192,8 @@ def uploadTutorial(request):
 
 @ap_view(["POST"])
 def postTest(request):
-     name = request.data.clean["name"]
+     title = request.data.clean["name"]
+     user = User()
      if(user.is_authenticated and user.is_teacher):
         test = Test()
         test.title = title
